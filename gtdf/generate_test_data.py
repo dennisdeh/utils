@@ -13,15 +13,16 @@ from dateutil.relativedelta import relativedelta
 # ------------------------ #
 # pandas.DataFrame's
 # ------------------------ #
-def gdf_single(n: int = 1000,
-               seed: int = 42,
-               max_int: int = 100,
-               max_float: float = 100.0,
-               max_str: int = 26,
-               date_start: str = "2000-01-01",
-               date_end: str = "2020-12-31",
-               ratio_nans: float = 0.1
-               ):
+def gdf_single(
+        n: int = 1000,
+        seed: int = 42,
+        max_int: int = 100,
+        max_float: float = 100.0,
+        max_str: int = 26,
+        date_start: str = "2000-01-01",
+        date_end: str = "2020-12-31",
+        ratio_nans: float = 0.1,
+):
     """
     Useful for generating pandas.DataFrame's with different column types.
     The ratio of missing values in the data can be controlled.
@@ -78,16 +79,19 @@ def gdf_single(n: int = 1000,
     """
 
     # step 1: generate random dates
-    datetimes = helper_generate_datetimes(n=n,
-                                          date_start=date_start,
-                                          date_end=date_end)
+    datetimes = helper_generate_datetimes(n=n, date_start=date_start, date_end=date_end)
 
     # step 2: create data frame
-    df = pd.DataFrame({"datetime": datetimes,
-                       "int": np.random.randint(low=1, high=max_int, size=n),
-                       "float": np.random.uniform(low=0, high=max_float, size=n),
-                       "str": [chr(65 + x) for x in np.random.randint(low=0, high=max_str, size=n)]
-                       })
+    df = pd.DataFrame(
+        {
+            "datetime": datetimes,
+            "int": np.random.randint(low=1, high=max_int, size=n),
+            "float": np.random.uniform(low=0, high=max_float, size=n),
+            "str": [
+                chr(65 + x) for x in np.random.randint(low=0, high=max_str, size=n)
+            ],
+        }
+    )
 
     # step 3: generate and insert random missing values
     df = df.mask(np.random.random(df.shape) < ratio_nans)
@@ -96,7 +100,8 @@ def gdf_single(n: int = 1000,
     return df
 
 
-def gdf(n: int = 1000,
+def gdf(
+        n: int = 1000,
         n_copies: int = 1,
         seed: int = 42,
         max_int: int = 100,
@@ -104,8 +109,8 @@ def gdf(n: int = 1000,
         max_str: int = 26,
         date_start: str = "2000-01-01",
         date_end: str = "2020-12-31",
-        ratio_nans: float = 0.1
-        ):
+        ratio_nans: float = 0.1,
+):
     """
     This tool is useful for generating pandas.DataFrame's with many types of data.
     The ratio of missing values can be controlled. The function makes n_copies
@@ -150,34 +155,38 @@ def gdf(n: int = 1000,
     # step 1: join many
     for copy in range(n_copies):
         if copy == 0:
-            df = gdf_single(n=n,
-                            seed=seed,
-                            max_int=max_int,
-                            max_float=max_float,
-                            max_str=max_str,
-                            date_start=date_start,
-                            date_end=date_end,
-                            ratio_nans=ratio_nans
-                            )
+            df = gdf_single(
+                n=n,
+                seed=seed,
+                max_int=max_int,
+                max_float=max_float,
+                max_str=max_str,
+                date_start=date_start,
+                date_end=date_end,
+                ratio_nans=ratio_nans,
+            )
         else:
-            df = df.join(gdf_single(n=n,
-                                    seed=seed + copy,
-                                    max_int=max_int,
-                                    max_float=max_float,
-                                    max_str=max_str,
-                                    date_start=date_start,
-                                    date_end=date_end,
-                                    ratio_nans=ratio_nans
-                                    ), on=None, rsuffix="_" + str(copy))
+            df = df.join(
+                gdf_single(
+                    n=n,
+                    seed=seed + copy,
+                    max_int=max_int,
+                    max_float=max_float,
+                    max_str=max_str,
+                    date_start=date_start,
+                    date_end=date_end,
+                    ratio_nans=ratio_nans,
+                ),
+                on=None,
+                rsuffix="_" + str(copy),
+            )
     return df
 
 
 # ------------------------ #
 # Helper functions
 # ------------------------ #
-def helper_generate_datetimes(n=100,
-                              date_start="2000-01-01",
-                              date_end="2020-12-31"):
+def helper_generate_datetimes(n=100, date_start="2000-01-01", date_end="2020-12-31"):
     """
     Generates a list of random datetime objects with timestamps between
     a given start and end date.
@@ -199,13 +208,8 @@ def helper_generate_datetimes(n=100,
     date_start_dt = pd.to_datetime(date_start)
     date_end_dt = pd.to_datetime(date_end)
 
-    start_u = date_start_dt.value // 10 ** 9
-    end_u = date_end_dt.value // 10 ** 9
+    start_u = date_start_dt.value // 10**9
+    end_u = date_end_dt.value // 10**9
 
     return pd.to_datetime(np.random.randint(start_u, end_u, n), unit="s")
 
-
-if __name__ == '__main__':
-    dftest = gdf(n_copies=2)
-    dftest2 = gdf(ratio_nans=0)
-    dftest3 = gdf(ratio_nans=1)
